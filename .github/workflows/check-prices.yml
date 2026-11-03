@@ -1,0 +1,22 @@
+name: Check hotel prices
+
+on:
+  schedule:
+    - cron: "0 * * * *" # every hour (UTC); GitHub may delay scheduled runs a few minutes
+  workflow_dispatch: {} # lets you run it by hand from the Actions tab
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check prices and notify
+        env:
+          LITEAPI_KEY: ${{ secrets.LITEAPI_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python bot.py
