@@ -12,6 +12,19 @@
       "currency": "BRL",
       "guest_nationality": "BR",
       "max_price_per_night": 2000
+    },
+    {
+      "name": "Crete - Minos Palace, October",
+      "latitude": 35.2028979,
+      "longitude": 25.718337,
+      "radius_meters": 2000,
+      "hotel_names": ["minos palace"],
+      "checkin": "2027-10-02",
+      "checkout": "2027-10-09",
+      "adults": 2,
+      "currency": "NOK",
+      "guest_nationality": "BR",
+      "max_price_per_night": 2200
     }
   ]
 }
