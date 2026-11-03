@@ -229,7 +229,20 @@ def main():
     if not key:
         sys.exit("LITEAPI_KEY is not set")
     with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")) as f:
-        config = json.load(f)
+        text = f.read()
+    try:
+        config = json.loads(text)
+    except json.JSONDecodeError as exc:
+        bad_line = text.splitlines()[exc.lineno - 1] if exc.lineno <= len(text.splitlines()) else ""
+        msg = (
+            f"config.json is not valid JSON (line {exc.lineno}, column {exc.colno}: {exc.msg}).\n"
+            f"Line {exc.lineno}: {bad_line.strip()}\n"
+            'Tip: text must be in double quotes, e.g. ["ze maria"], and items are separated by commas.'
+        )
+        print("ERROR: " + msg, file=sys.stderr)
+        if os.environ.get("TELEGRAM_BOT_TOKEN") or os.environ.get("DRY_RUN") == "1":
+            send_telegram("⚠️ Hotel bot: " + html.escape(msg))
+        sys.exit(1)
 
     failed = False
     today = dt.date.today()
