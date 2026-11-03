@@ -15,6 +15,7 @@ import datetime as dt
 import html
 import json
 import os
+import re
 import sys
 import unicodedata
 import urllib.error
@@ -51,6 +52,13 @@ def normalize(text):
     return "".join(c for c in text if not unicodedata.combining(c)).lower().strip()
 
 
+def name_matches(wanted, hotel_name):
+    """True if every word of `wanted` appears in the hotel name."""
+    words = re.findall(r"\w+", normalize(wanted))
+    name = normalize(hotel_name)
+    return bool(words) and all(w in name for w in words)
+
+
 def hotels_by_id(ids, key):
     """Look up names for an explicit list of hotel IDs."""
     hotels = {}
@@ -75,13 +83,17 @@ def find_hotels(search, key):
     if search.get("hotel_ids"):
         return hotels_by_id(search["hotel_ids"], key)
     hotels = area_hotels(search, key)
-    wanted = [normalize(n) for n in search.get("hotel_names", [])]
+    wanted = [n for n in search.get("hotel_names", []) if str(n).strip()]
     if wanted:
-        hotels = {hid: h for hid, h in hotels.items() if any(w in normalize(h.get("name", "")) for w in wanted)}
-        found = {w for w in wanted for h in hotels.values() if w in normalize(h.get("name", ""))}
+        kept, unmatched = {}, []
         for w in wanted:
-            if w not in found:
-                print(f"'{search['name']}': no hotel in the area matches name '{w}'", file=sys.stderr)
+            hits = {hid: h for hid, h in hotels.items() if name_matches(w, h.get("name", ""))}
+            if not hits:
+                unmatched.append(w)
+            kept.update(hits)
+        for w in unmatched:
+            print(f"'{search['name']}': no hotel in the area matches name '{w}'", file=sys.stderr)
+        hotels = kept
     return hotels
 
 
