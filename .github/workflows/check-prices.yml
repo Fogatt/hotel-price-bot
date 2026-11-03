@@ -2,7 +2,7 @@ name: Check hotel prices
 
 on:
   schedule:
-    - cron: "0 * * * *" # every hour (UTC); GitHub may delay scheduled runs a few minutes
+    - cron: "17 * * * *" # every hour at minute 17 (UTC); off the busy :00 slot, GitHub may still delay runs
   workflow_dispatch: {} # lets you run it by hand from the Actions tab
 
 jobs:
