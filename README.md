@@ -50,6 +50,22 @@ Edit `config.json`. You can add several searches:
 ```
 
 Instead of coordinates you can use `"country_code": "BR", "city_name": "Recife"`.
+
+### Only check specific hotels / pousadas
+By name (part of the name is enough; upper/lower case and accents are ignored):
+```json
+"hotel_names": ["Maravilha", "Zé Maria", "Teju-Açu"]
+```
+By LiteAPI hotel ID (exact; no area needed):
+```json
+"hotel_ids": ["lp1a2b3", "lp4c5d6"]
+```
+Leave both out (or empty) to check every hotel in the area.
+To see the names and IDs LiteAPI has for your area:
+```bash
+LITEAPI_KEY=sand_... python list_hotels.py
+```
+A name that matches nothing is reported in the Action log.
 Searches whose check-in date has passed are skipped.
 
 ## Run locally

@@ -16,6 +16,7 @@ import html
 import json
 import os
 import sys
+import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -44,8 +45,47 @@ def lite(method, path, key, params=None, body=None):
     return http(method, url, {"X-API-Key": key, "Accept": "application/json"}, body)
 
 
+def normalize(text):
+    """Lowercase and strip accents so 'Pousada Zé' matches 'pousada ze'."""
+    text = unicodedata.normalize("NFKD", str(text))
+    return "".join(c for c in text if not unicodedata.combining(c)).lower().strip()
+
+
+def hotels_by_id(ids, key):
+    """Look up names for an explicit list of hotel IDs."""
+    hotels = {}
+    for hid in ids:
+        try:
+            info = lite("GET", "/data/hotel", key, params={"hotelId": hid}).get("data") or {}
+        except RuntimeError as exc:
+            print(f"Could not look up {hid}: {exc}", file=sys.stderr)
+            info = {}
+        hotels[hid] = {"id": hid, "name": info.get("name", hid), "stars": info.get("starRating") or info.get("stars")}
+    return hotels
+
+
 def find_hotels(search, key):
-    """Return {hotelId: hotel_info} for the search area."""
+    """Return {hotelId: hotel_info} for the search.
+
+    - "hotel_ids": check exactly these LiteAPI hotel IDs (no area needed).
+    - "hotel_names": search the area, keep only hotels whose name contains
+      one of these words (case and accents ignored).
+    - neither: every hotel in the area.
+    """
+    if search.get("hotel_ids"):
+        return hotels_by_id(search["hotel_ids"], key)
+    hotels = area_hotels(search, key)
+    wanted = [normalize(n) for n in search.get("hotel_names", [])]
+    if wanted:
+        hotels = {hid: h for hid, h in hotels.items() if any(w in normalize(h.get("name", "")) for w in wanted)}
+        found = {w for w in wanted for h in hotels.values() if w in normalize(h.get("name", ""))}
+        for w in wanted:
+            if w not in found:
+                print(f"'{search['name']}': no hotel in the area matches name '{w}'", file=sys.stderr)
+    return hotels
+
+
+def area_hotels(search, key):
     params = {"limit": 1000}
     if "latitude" in search:
         params.update(

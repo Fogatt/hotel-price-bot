@@ -5,6 +5,7 @@
       "latitude": -3.8547,
       "longitude": -32.4247,
       "radius_meters": 15000,
+      "hotel_names": [],
       "checkin": "2026-12-10",
       "checkout": "2026-12-14",
       "adults": 2,
