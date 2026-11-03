@@ -5,13 +5,13 @@
       "latitude": -3.8547,
       "longitude": -32.4247,
       "radius_meters": 15000,
-      "hotel_names": ["ze maria"],
-      "checkin": "2026-12-10",
-      "checkout": "2026-12-14",
+      "hotel_names": ["ze maria", "maravilha", "morena", "akana", "moana", "nannai", "maria bonita", "mirante"],
+      "checkin": "2027-07-18",
+      "checkout": "2026-07-22",
       "adults": 2,
       "currency": "BRL",
       "guest_nationality": "BR",
-      "max_price_per_night": 1500
+      "max_price_per_night": 2000
     }
   ]
 }
