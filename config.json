@@ -10,8 +10,7 @@
       "checkout": "2027-07-22",
       "adults": 2,
       "currency": "BRL",
-      "guest_nationality": "BR",
-      "max_price_per_night": 10000
+      "guest_nationality": "BR"
     },
     {
       "name": "Crete - Minos Palace, October",
