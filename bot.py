@@ -90,6 +90,9 @@ def find_hotels(search, key):
             hits = {hid: h for hid, h in hotels.items() if name_matches(w, h.get("name", ""))}
             if not hits:
                 unmatched.append(w)
+            else:
+                names = "; ".join(sorted(h.get("name", hid) for hid, h in hits.items()))
+                print(f"'{search['name']}': name '{w}' matched {len(hits)} hotel(s): {names}")
             kept.update(hits)
         for w in unmatched:
             print(f"'{search['name']}': no hotel in the area matches name '{w}'", file=sys.stderr)
@@ -155,14 +158,18 @@ def run_search(search, key):
     if not hotels:
         return nights, len(hotels), []
     matches = []
+    max_price = search.get("max_price_per_night")
+    priced = set()
     for entry in get_rates(search, list(hotels), key):
         best = cheapest_total(entry)
         if not best:
             continue
         total, cur = best
         per_night = total / nights
-        if per_night <= float(search["max_price_per_night"]):
-            info = hotels.get(entry.get("hotelId"), {})
+        info = hotels.get(entry.get("hotelId"), {})
+        priced.add(entry.get("hotelId"))
+        print(f"   {info.get('name', entry.get('hotelId'))}: {money(per_night, cur or '')}/night")
+        if max_price is None or per_night <= float(max_price):
             matches.append(
                 {
                     "name": info.get("name", entry.get("hotelId")),
@@ -172,6 +179,9 @@ def run_search(search, key):
                     "currency": cur or search.get("currency", "USD"),
                 }
             )
+    for hid, h in hotels.items():
+        if hid not in priced:
+            print(f"   {h.get('name', hid)}: no rooms/price for these dates")
     matches.sort(key=lambda m: m["per_night"])
     return nights, len(hotels), matches
 
@@ -185,7 +195,11 @@ def format_message(search, nights, hotel_count, matches):
     lines = [
         f"🏨 <b>{e(search['name'])}</b>",
         f"{search['checkin']} → {search['checkout']} ({nights} nights), {search.get('adults', 2)} adults",
-        f"Max: {money(float(search['max_price_per_night']), search.get('currency', 'USD'))}/night",
+        (
+            f"Max: {money(float(search['max_price_per_night']), search.get('currency', 'USD'))}/night"
+            if search.get("max_price_per_night") is not None
+            else "No max price set: showing all prices"
+        ),
         f"{len(matches)} of {hotel_count} hotels match:",
         "",
     ]
